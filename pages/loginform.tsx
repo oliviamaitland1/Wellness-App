@@ -10,7 +10,7 @@ export default function LoginForm() {
   const router = useRouter();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signInWithPassword({ // eslint-disable-next-line @typescript-eslint/no-unused-vars const data = something; remove this line
+    const { data, error } = await supabase.auth.signInWithPassword({ // eslint-disable-next-line @typescript-eslint/no-unused-vars 
       email,
       password,
     });
