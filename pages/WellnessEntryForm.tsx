@@ -1,0 +1,102 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient'; // Adjust the import path as necessary
+import { error } from 'console';
+
+
+
+
+export default function WellnessEntryForm() {
+    interface Entry { 
+        id: string;
+        entry: string;
+        created_at: string;
+    }
+    const [entry, setEntry] = useState('')
+    const [message, setMessage] = useState('');
+    const [entries, setEntries] = useState<Entry[]>([]);
+    // Handle wellness entry logic here
+   const fetchEntries = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data, error: fetchError } = await supabase
+        .from('wellness_entries')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+    if (fetchError) {
+        console.error('Error fetching entries:', fetchError.message);
+        setMessage('Failed to fetch entries. Please try again.');
+    } else {
+        console.log('Entries fetched successfully:', data);
+        setMessage('Entries fetched successfully!');
+        setEntries(data || []); // Ensure setEntries is always provided with an array
+    }
+ };
+
+    useEffect(() => {
+        fetchEntries();
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data, error: submitError } = await supabase
+        .from('wellness_entries')
+        .insert([{ entry, user_id: user?.id }]);
+    if (submitError) {
+        console.error('Error submitting entry:', submitError.message);
+        setMessage('Failed to submit entry. Please try again.');
+    } else {
+        console.log('Entry submitted successfully:', data);
+        setMessage('Entry submitted successfully!');
+        setEntry('');
+        fetchEntries(); // Refresh entries after submission
+    }
+    console.log('Wellness Entry:', entry);
+};
+
+return (
+    <div>
+        <form onSubmit={handleSubmit}>
+            <div>
+                <label htmlFor="entry">Journal your wellness journey!!:</label>
+                <textarea
+                    id="entry"
+                    value={entry}
+                    onChange={(e) => setEntry(e.target.value)}
+                    rows={4}
+                    cols={50}
+                    placeholder='Write about your wellness journey here...'
+                    required
+                />
+            </div>
+            <button type="submit">Save Entry</button>
+            {message && <p>{message}</p>}
+        </form>
+        <h3>Recent Entries:</h3>
+        {
+            entries.length === 0 ? (
+                <p>No entries found. Start your wellness journey by adding an entry!</p>
+            ) : (
+            <ul>
+                {entries.map((item) => (
+                    <li key={item.id}>
+                        <p>{item.entry}</p>
+                        <small>{item.created_at ? new Date(item.created_at).toLocaleString() : 'No date available'}</small>
+                        <hr />
+                    </li>
+                ))}
+            </ul>
+        )
+        }
+    </div>
+    );
+
+}
+
+function order(arg0: string, arg1: { ascending: boolean; }) {
+    throw new Error('Function not implemented.');
+}
+function from(arg0: string) {
+    throw new Error('Function not implemented.');
+}
