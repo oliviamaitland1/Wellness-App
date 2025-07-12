@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link"; // HOME PAGE
+import Link from "next/link"; // HomePage  
 // This is the main entry point for the wellness app, providing a welcome message and a link
 
 

@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient'; // Adjust the import path as necessary
-import { error } from 'console';
-
-
+import {useEffect, useState} from 'react';
+import {supabase} from '../lib/supabaseClient';
+import sanitizeInput from '../lib/lib/sanitizeInput.js'; 
 
 
 export default function WellnessEntryForm() {
@@ -11,7 +9,9 @@ export default function WellnessEntryForm() {
         entry: string;
         created_at: string;
     }
+    
     const [entry, setEntry] = useState('')
+    const maxCharacters = 255;
     const [message, setMessage] = useState('');
     const [entries, setEntries] = useState<Entry[]>([]);
     // Handle wellness entry logic here
@@ -21,7 +21,7 @@ export default function WellnessEntryForm() {
         .from('wellness_entries')
         .select('*')
         .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', {ascending: false});
 
     if (fetchError) {
         console.error('Error fetching entries:', fetchError.message);
@@ -39,6 +39,13 @@ export default function WellnessEntryForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const sanitizedInput = sanitizeInput(entry);
+        const {error: sanitizeError} = await sanitizeInput(entry);
+        if (sanitizeError) {
+            console.error('Error sanitizing input:', sanitizeError.message);
+        } else {
+            console.error('Input sanitized successfully:', sanitizedInput);
+        }
         const { data: { user }, error } = await supabase.auth.getUser();
         const { data, error: submitError } = await supabase
         .from('wellness_entries')
@@ -64,12 +71,18 @@ return (
                     id="entry"
                     value={entry}
                     onChange={(e) => setEntry(e.target.value)}
+                    maxLength={maxCharacters + 1}
                     rows={4}
                     cols={50}
                     placeholder='Write about your wellness journey here...'
                     required
                 />
             </div>
+            {entry.length > maxCharacters && ( 
+                        <p style={{color:"red", marginTop: '4px'}}>
+                            You have exceeded the maximum character limit of {maxCharacters} characters.
+                        </p>
+                    )}
             <button type="submit">Save Entry</button>
             {message && <p>{message}</p>}
         </form>
@@ -94,7 +107,7 @@ return (
 
 }
 
-function order(arg0: string, arg1: { ascending: boolean; }) {
+function order(arg0: string, arg1: {ascending: boolean;}) {
     throw new Error('Function not implemented.');
 }
 function from(arg0: string) {
