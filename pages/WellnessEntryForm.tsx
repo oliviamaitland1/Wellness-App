@@ -1,9 +1,10 @@
+import React from 'react';
 import {useEffect, useState} from 'react';
 import {supabase} from '../lib/supabaseClient';
 import sanitizeInput from '../lib/lib/sanitizeInput.js'; 
 
 
-export default function WellnessEntryForm() {
+function WellnessEntryForm() {
     interface Entry { 
         id: string;
         entry: string;
@@ -63,30 +64,31 @@ export default function WellnessEntryForm() {
 };
 
 return (
-    <div>
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="entry">Journal your wellness journey!!:</label>
-                <textarea
-                    id="entry"
-                    value={entry}
-                    onChange={(e) => setEntry(e.target.value)}
-                    maxLength={maxCharacters + 1}
-                    rows={4}
-                    cols={50}
-                    placeholder='Write about your wellness journey here...'
-                    required
-                />
-            </div>
-            {entry.length > maxCharacters && ( 
+    <div className="max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Wellness Entry Form</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-gray-700">Journal your wellness journey!!:</label>
+          <textarea 
+            className="w-full p-2 border rounded" 
+            rows={4}
+            cols={50}
+            value={entry}
+            onChange={(e) => setEntry(e.target.value)}
+            maxLength={maxCharacters + 1}
+            placeholder='Write about your wellness journey here...'
+            required
+          />
+        </div>
+        {entry.length > maxCharacters && ( 
                         <p style={{color:"red", marginTop: '4px'}}>
                             You have exceeded the maximum character limit of {maxCharacters} characters.
                         </p>
                     )}
-            <button type="submit">Save Entry</button>
-            {message && <p>{message}</p>}
-        </form>
-        <h3>Recent Entries:</h3>
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Save Entry</button>
+        {message && <p>{message}</p>}
+      </form>
+      <h3>Recent Entries:</h3>
         {
             entries.length === 0 ? (
                 <p>No entries found. Start your wellness journey by adding an entry!</p>
@@ -103,13 +105,7 @@ return (
         )
         }
     </div>
-    );
-
+  );
 }
 
-function order(arg0: string, arg1: {ascending: boolean;}) {
-    throw new Error('Function not implemented.');
-}
-function from(arg0: string) {
-    throw new Error('Function not implemented.');
-}
+export default WellnessEntryForm;
