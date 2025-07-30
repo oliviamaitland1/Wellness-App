@@ -4,6 +4,7 @@ import {useEffect, useRef} from "react";
 import { useRouter } from "next/router";
 
 
+
 export default function App({ Component, pageProps }: AppProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   useEffect (() => {
@@ -25,5 +26,4 @@ return (
     <Component {...pageProps} />
     </>
 );
-
 }

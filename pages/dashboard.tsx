@@ -118,6 +118,9 @@ function Dashboard() {
         <h2 className="text-lg font-semibold">Coming Soon: Your Stats</h2>
         <p>Placeholder for future analytics and statistics.</p>
       </motion.div>
+      <Link href="/settings"><button className="block p-6 bg-white rounded-lg shadow-md hover:bg-gray-100">
+        Settings
+      </button></Link>
       <button onClick={handleLogout} className="block p-6 bg-white rounded-lg shadow-md hover:bg-gray-100">
         Logout
       </button>
