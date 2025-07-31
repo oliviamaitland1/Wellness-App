@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import withAuth from "../components/ProtectedRoute";
+import image from 'next/image';
+import { useUser } from '@supabase/auth-helpers-react';
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
@@ -8,6 +10,7 @@ function Settings() {
     const [theme, setTheme] = useState('light');
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
+    const user = useUser();
 
     useEffect(() => {
         const fetchProfilePic = async () => {
@@ -55,6 +58,7 @@ function Settings() {
             console.error('User retrieval error:', userError?.message);
             return;
         }
+
         const userId = userData.user.id;
         const fileName = `${userId}_${Date.now()}`;
         const { data, error } = await supabase.storage
@@ -64,19 +68,26 @@ function Settings() {
             console.error('Upload error:', error.message);
             return;
         }
-        const { data: urlData, error: urlError } = supabase.storage
+        const { data: urlData } = supabase.storage
             .from('profile-pics')
             .getPublicUrl(fileName);
-        if (urlError) {
-            console.error('URL error:', urlError.message);
+        if (!urlData) {
+            console.error('URL error:');
             return;
         }
         const publicUrl = urlData.publicUrl;
-        const { error: upsertError } = await supabase
+        const { error: updateError } = await supabase
             .from('user_settings')
-            .upsert({ user_id: userId, profile_url: imageUrl });
-        if (upsertError) {
-            console.error('Upsert error:', upsertError.message);
+            .update({ profile_url: publicUrl })
+            .eq('user_id', userId);
+        if (updateError) {
+            console.error('Update error:', updateError.message);
+        
+            console.log('🔍 Supabase user ID:', userData.user.id);
+            console.log('📦 Payload going into update:', {
+              user_id: userData.user.id,
+              profile_url: publicUrl
+            });
         }
     };
 
