@@ -9,6 +9,21 @@ function Dashboard() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
+  const [mood, setMood] = useState("");
+  const [waterIntake, setWaterIntake] = useState(new Array(8).fill(false));
+  const [moodLoading, setMoodLoading] = useState(true);
+  const [meditationOpen, setMeditationOpen] = useState(false);
+
+
+
+  const meditationVariants = {
+    closed: { height: 0, opacity: 0, overflow: 'hidden' },
+    open: { height: 'auto', opacity: 1, overflow: 'visible', transition: { duration: 0.5 } }
+  };
+
+  const toggleMeditation = () => {
+    setMeditationOpen(!meditationOpen);
+  };
 
   useEffect(() => {
     async function checkUser() {
@@ -23,7 +38,49 @@ function Dashboard() {
 
     checkUser();
   }, [router]);
-
+  useEffect(() => {
+    async function fetchWaterIntake() {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error("User fetch error:", userError?.message);
+        return;
+      }
+  
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('water_intake')
+        .eq('user_id', user.id)
+        .single();
+  
+      if (error) {
+        console.error("Fetch water intake error:", error.message);
+      }
+  
+      if (data?.water_intake) {
+        setWaterIntake(data.water_intake);
+      }
+    }
+  
+    fetchWaterIntake();
+  }, []);
+  
+  useEffect(() => {
+    async function fetchMood() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('user_settings')
+          .select('mood')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setMood(data.mood);
+        }
+      }
+    }
+    fetchMood();
+    setMoodLoading(false);
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -34,97 +91,127 @@ function Dashboard() {
     }
   };
 
+  const handleMoodSelect = async (selectedMood: string) => {
+    setMood(selectedMood);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error("User fetch error:", userError?.message);
+      return;
+    }
+  
+    const userId = user.id;
+  
+    const { data: existingRow, error: fetchError } = await supabase
+      .from('user_settings')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single();
+  
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Fetch error:", fetchError.message);
+      return;
+    }
+  
+    if (existingRow) {
+      const { error: updateError } = await supabase
+        .from('user_settings')
+        .update({ mood: selectedMood })
+        .eq('user_id', userId);
+  
+      if (updateError) {
+        console.error("Update error:", updateError.message);
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('user_settings')
+        .insert({ user_id: userId, mood: selectedMood });
+  
+      if (insertError) {
+        console.error("Insert error:", insertError.message);
+      }
+    }
+  };
+  
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  const toggleWaterIntake = async (index) => {
+    const updatedIntake = waterIntake.map((item, i) => i === index ? !item : item);
+    setWaterIntake(updatedIntake);
+  
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { error } = await supabase
+        .from('user_settings')
+        .update({ water_intake: updatedIntake })
+        .eq('user_id', user.id);
+      if (error) {
+        console.error('Error updating water intake:', error.message);
+      }
+    }
+  };  
+
   return (
-  <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-[bungee] mb-4">Welcome to Your Wellness Dashboard, {userName || 'friend'}!</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <motion.div
-          className="relative block bg-purple-300 p-6 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-transform overflow-hidden"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href="/wellness-entry">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-300 opacity-0 hover:opacity-50 transition-opacity z-10"></div>
-            <BookOpen className="w-6 h-6 mb-2 bg-pink-300" />
-            <h2 className="text-lg font-semibold">Wellness Entry</h2>
-            <p>Log your daily wellness journey.</p>
-          </Link>
-        </motion.div> 
-        <motion.div
-          className="relative block p-6 bg-indigo-500 rounded-lg shadow-md shadow-pink-300 hover:shadow-lg hover:scale-105 transition-transform overflow-hidden"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href="#">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-300 opacity-0 hover:opacity-50 transition-opacity z-10"></div>
-            <Heart className="w-6 h-6 mb-2 bg-pink-300" />
-            <h2 className="text-lg font-semibold">Water Tracker</h2>
-            <p>Track your daily water intake.</p>
-          </Link>
-        </motion.div>
-        <motion.div
-          className="relative block p-6 bg-rose-500 rounded-lg shadow-md shadow-pink-300 hover:shadow-lg hover:scale-105 transition-transform overflow-hidden"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href="#">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-300 opacity-0 hover:opacity-50 transition-opacity z-10"></div>
-            <Dumbbell className="w-6 h-6 mb-2 bg-pink-300" />
-            <h2 className="text-lg font-semibold">Fitness Log</h2>
-            <p>Record your workouts and progress.</p>
-          </Link>
-        </motion.div>
-        <motion.div
-          className="relative block p-6 bg-amber-300 rounded-lg shadow-md shadow-pink-300 hover:shadow-lg hover:scale-105 transition-transform overflow-hidden"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href="#">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-300 opacity-0 hover:opacity-50 transition-opacity z-10"></div>
-            <Utensils className="w-6 h-6 mb-2 bg-pink-300" />
-            <h2 className="text-lg font-semibold">Nutrition</h2>
-            <p>Monitor your dietary habits.</p>
-          </Link>
-        </motion.div>
-        <motion.div
-          className="relative block p-6 bg-emerald-500 rounded-lg shadow-md shadow-pink-300 hover:shadow-lg hover:scale-105 transition-transform overflow-hidden"
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link href="#">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-gray-300 opacity-0 hover:opacity-50 transition-opacity z-10"></div>
-            <Smile className="w-6 h-6 mb-2 bg-pink-300" />
-            <h2 className="text-lg font-semibold">Meditation & Relaxing</h2>
-            <p>Find peace and mindfulness.</p>
-          </Link>
-        </motion.div>
+    <main className="max-w-6xl space-y-6 mx-auto p-6 bg-gradient-to-br from-orange-100 via-pink-100 to-purple-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="rounded-full animate-pulse shadow-md shadow-pink-300 bg-gradient-to-r from-pink-300 to-orange-200 p-4 m-4 text-lg font-[tektur] text-white text-center">
+        "You are glowing from the inside out."
       </div>
+      <div className="flex flex-col space-y-4">
+      {!moodLoading && (
+      <div className="flex justify-around items-center p-4 m-4 bg-purple-100 rounded-xl shadow-md">
+        <p className="text-sm font-[tektur]">What's your mood today, bestie?</p>
+        <button className={`text-2xl ${mood === 'happy' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('happy')} aria-label="happy">😊</button>
+        <button className={`text-2xl ${mood === 'neutral' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('neutral')} aria-label="neutral">😐</button>
+        <button className={`text-2xl ${mood === 'sad' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('sad')} aria-label="sad">😢</button>
+        <button className={`text-2xl ${mood === 'angry' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('angry')} aria-label="angry">😡</button>
+      </div>
+      )}
+      <div className="flex justify-around items-center p-4 m-4 bg-blue-100 rounded-xl shadow-md">
+       <p className="text-sm font-[tektur]">How many cups of water have you had today?</p>
+        {[...Array(8)].map((_, i) => (
+          <button key={i} className={`w-6 h-6 rounded-full ${waterIntake[i] ? 'bg-blue-500' : 'bg-gray-300'}`} onClick={() => toggleWaterIntake(i)}></button>
+        ))}
+      </div>
+      </div>
+      <div className="bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full inline-block">
+      <div className="bg-gradient-to-r from-orange-200 via-white to-pink-200 bg-clip-text text-transparent italic font-medium animate-pulse">
+        Take 5 minutes to breathe deeply today.
+      </div>
+      </div>
+      <div className="absolute top-4 left-4 text-sm italic">
+        🌔 Current Moon Phase: Waxing Gibbous
+      </div>
+      <button onClick={toggleMeditation} className=" bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-full transition duration-200">
+        Start a Meditation
+      </button>
       <motion.div
-        className="p-6 bg-gray-200 rounded-lg mb-8"
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
+        className="bg-white/80 rounded-lg shadow-md p-4 mt-4"
+        initial="closed"
+        animate={meditationOpen ? "open" : "closed"}
+        variants={meditationVariants}
       >
-        <h2 className="text-lg font-semibold">Coming Soon: Your Stats</h2>
-        <p>Placeholder for future analytics and statistics.</p>
+        <p className="text-center mb-4">I am safe, I am grounded, I am loved.</p>
+        <audio controls className="w-full">
+          <source src="https://example.com/meditation.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
       </motion.div>
-      <Link href="/settings"><button className="block p-6 bg-white rounded-lg shadow-md hover:bg-gray-100">
+      <div className="flex flex-wrap justify-center gap-4 mt-4 absolute bottom-4">
+      <Link href="/progress">
+        <div className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
+          Progress Page
+        </div>
+      </Link>
+      <Link href="/settings"><div className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
         Settings
-      </button></Link>
-      <button onClick={handleLogout} className="block p-6 bg-white rounded-lg shadow-md hover:bg-gray-100">
+      </div></Link>
+      <button onClick={handleLogout} className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
         Logout
       </button>
-    </div>
+      </div>
+    </main>
   );
 }
   

@@ -80,6 +80,8 @@ function Settings() {
             .from('user_settings')
             .update({ profile_url: publicUrl })
             .eq('user_id', userId);
+            
+
         if (updateError) {
             console.error('Update error:', updateError.message);
         
