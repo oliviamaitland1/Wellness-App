@@ -6,6 +6,8 @@ import { Music, Dumbbell, BookOpen, Utensils, Smile, Heart } from 'lucide-react'
 import Link from 'next/link';
 import Lottie from 'lottie-react';
 import squatReachData from '../public/Squat Reach.json';
+import {v4 as uuidv4} from 'uuid';
+import { UserSettings } from '../types/userSettings';
 
 function Dashboard() {
   const router = useRouter();
@@ -15,6 +17,78 @@ function Dashboard() {
   const [waterIntake, setWaterIntake] = useState(new Array(8).fill(false));
   const [moodLoading, setMoodLoading] = useState(true);
   const [meditationOpen, setMeditationOpen] = useState(false);
+  
+
+    const [mealName, setMealName] = useState ('')
+    const [calories, setCalories] = useState ('')
+    const [type, setType] = useState ('')
+    const [message, setMessage] = useState ('')
+    const [fat, setFat] = useState ('')
+    const [protein, setProtein] = useState ('')
+    const [carbs, setCarbs] = useState ('')
+    const [savedMeals, setSavedMeals] = useState<any[]>([]);
+
+    const handleAddMeal = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const {data: {user}, error: userError} = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('User retrieval error:', userError?.message);
+        return;
+      }
+
+      const newMeal = {
+        mealId: uuidv4(),
+        mealName,
+        calories: parseInt(calories),
+        type,
+        date: new Date().toISOString().split('T')[0],
+        macros: {
+          fat: parseInt(fat),
+          protein: parseInt(protein),
+          carbs: parseInt(carbs)
+        }
+      };
+      
+      const {data: existingRow, error: fetchError} = await supabase
+      .from('user_settings')
+      .select('nutrition_log')
+      .eq('user_id', user.id)
+      .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Fetch error:', fetchError.message);
+        return;
+      }
+      const currentLog = existingRow?.nutrition_log || [];
+      const updatedLog = [...currentLog, newMeal];
+
+      if (existingRow) {
+        const { error: updateError } = await supabase
+        .from('user_settings')
+        .update({nutrition_log: updatedLog})
+        .eq('user_id', user.id);
+
+        if (updateError) {
+          console.error('Update error:', updateError.message);
+        }
+      } else {
+        const { error: insertError } = await supabase
+        .from('user_settings')
+        .insert({user_id: user.id, nutrition_log: [newMeal]});
+
+        if (insertError) {
+          console.error('Insert error:', insertError.message);
+        }
+      }
+
+      setMessage('Meal added successfully!');
+      setMealName('');
+      setCalories('');
+      setType('');
+      setFat('');
+      setProtein('');
+      setCarbs('');
+    }
 
 
 
@@ -82,6 +156,24 @@ function Dashboard() {
     }
     fetchMood();
     setMoodLoading(false);
+  }, []);
+
+  const fetchSavedMeals = async () => {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('nutrition_log')
+      .single();
+
+    if (error) {
+      console.error('Error fetching saved meals:', error.message);
+      return [];
+    }
+
+    return data?.nutrition_log || [];
+  };
+
+  useEffect(() => {
+    fetchSavedMeals().then(meals => setSavedMeals(meals));
   }, []);
 
   const handleLogout = async () => {
@@ -171,7 +263,7 @@ function Dashboard() {
         Start a Meditation
       </button>
       <motion.div
-        className="bg-white/80 rounded-lg shadow-md p-4 mt-4"
+        className="bg-white/80 rounded-lg shadow-md p-4 mt-4 mb-6"
         initial="closed"
         animate={meditationOpen ? "open" : "closed"}
         variants={meditationVariants}
@@ -182,8 +274,94 @@ function Dashboard() {
           Your browser does not support the audio element.
         </audio>
       </motion.div>
+      <div className="p-4 border rounded-lg shadow-md bg-green-100 max-w-md mx-auto">
+    <h2 className="text-lg font-bold mb-3 text-purple-700">🍽️ Nutrition Log</h2>
+    <form onSubmit={handleAddMeal} className="space-y-3">
+      <input
+        type="text"
+        placeholder="Meal Name"
+        value={mealName}
+        onChange={(e) => setMealName(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
+      <input
+        type="number"
+        placeholder="Calories"
+        value={calories}
+        onChange={(e) => setCalories(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      />
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        className="w-full p-2 border rounded"
+        required
+      >
+        <option value="">Select Meal Type</option>
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Snack">Snack</option>
+      </select>
+      <div className="grid grid-cols-3 gap-2">
+        <input
+          type="number"
+          placeholder="Protein (g)"
+          value={protein}
+          onChange={(e) => setProtein(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <input
+          type="number"
+          placeholder="Carbs (g)"
+          value={carbs}
+          onChange={(e) => setCarbs(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <input
+          type="number"
+          placeholder="Fat (g)"
+          value={fat}
+          onChange={(e) => setFat(e.target.value)}
+          className="p-2 border rounded"
+        />
       </div>
-      <div className="grid grid-cols-2 space-y-6 mt-6">
+      <button
+        type="submit"
+        className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded"
+      >
+        Add Meal
+      </button>
+      {message && <p className="text-green-600 mt-2">{message}</p>}
+    </form>
+  </div>
+  <div className="flex flex-col space-y-4 mt-8">
+    <h2 className="text-2xl font-bold">Saved Meals</h2>
+    {savedMeals.length === 0 ? (
+      <p>No saved meals found.</p>
+    ) : (
+      <ul className="space-y-2">
+        {savedMeals.map((meal) => (
+          <li key={meal.mealId} className="bg-white p-4 rounded shadow">
+            <h3 className="font-bold">{meal.mealName}</h3>
+            <p>Calories: {meal.calories}</p>
+            <p>Type: {meal.type}</p>
+            <p>Date: {meal.date}</p>
+            <p>Macros:</p>
+            <ul>
+              <li>Protein: {meal.macros.protein}g</li>
+              <li>Carbs: {meal.macros.carbs}g</li>
+              <li>Fat: {meal.macros.fat}g</li>
+            </ul>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+      </div>
+      <div className="grid grid-cols-2 space-y-6 mt-6 w-fit h-fit">
       {!moodLoading && (
       <div className="flex justify-around items-center p-4 m-4 bg-purple-100 rounded-xl shadow-md">
         <p className="text-sm font-[tektur]">What's your mood today, bestie?</p>
@@ -209,8 +387,8 @@ function Dashboard() {
         <p className="text-sm text-gray-600 mt-2 italic">Try a gentle side stretch to loosen your spine!</p>
       </div>
       </div>
-      <div className="flex flex-col absolute bottom-0 right-4">
-      <div className="rounded-full mt-8 w-fit h-fit animate-pulse shadow-md shadow-pink-300 bg-gradient-to-r from-pink-300 to-orange-200 p-4 m-4 text-lg font-[tektur] text-white">
+      <div className="rounded-xl p-4 shadow-md flex flex-col items-center space-y-3 max-w-xs mx-auto bottom-4 right-4 absolute">
+      <div className="rounded-sm mt-8 w-fit h-fit animate-pulse shadow-md shadow-pink-300 bg-gradient-to-r from-pink-300 to-orange-200 p-4 m-4 text-lg font-[tektur] text-white">
          Affirmation of The Day💗<br></br>
          "I am glowing from the inside out."
         </div>
@@ -218,7 +396,7 @@ function Dashboard() {
         🌔 Current Moon Phase: Waxing Gibbous
       </div>
       </div>
-      <div className="flex flex-wrap justify-center gap-4 mt-4 absolute bottom-4">
+      <div className="flex flex-wrap justify-center gap-4 mt-8">
       <Link href="/progress">
         <div className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
           Progress Page
