@@ -29,11 +29,11 @@ export default function LoginForm() {
 
     try {
       console.log("supabase.auth:", supabase.auth);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
+    
       if (error) {
         console.error("Supabase Error:", error.message);
         toast.error(error.message || "An unexpected error occurred.");
