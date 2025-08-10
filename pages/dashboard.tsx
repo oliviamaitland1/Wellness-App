@@ -7,7 +7,8 @@ import Link from 'next/link';
 import Lottie from 'lottie-react';
 import squatReachData from '../public/Squat Reach.json';
 import {v4 as uuidv4} from 'uuid';
-import { UserSettings } from '../types/userSettings';
+import AppHeader from '../components/AppHeader';
+
 
 function Dashboard() {
   const router = useRouter();
@@ -27,6 +28,28 @@ function Dashboard() {
     const [protein, setProtein] = useState ('')
     const [carbs, setCarbs] = useState ('')
     const [savedMeals, setSavedMeals] = useState<any[]>([]);
+
+
+const [profileUrl, setProfileUrl] = useState<string | null>(null);
+
+useEffect(() => {
+  (async () => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) return;
+
+    const userId = userData.user.id;
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('profile_url')
+      .eq('user_id', userId)
+      .single();
+
+    if (!error && data?.profile_url) {
+      setProfileUrl(data.profile_url);
+     }
+     })();
+     }, []);
+
 
     const handleAddMeal = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -248,9 +271,12 @@ function Dashboard() {
   };  
 
   return (
-    <main className="max-w-6xl space-y-6 mx-auto p-6 bg-gradient-to-br from-orange-100 via-pink-100 to-purple-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <main className="max-w-6xl space-y-6 mx-auto p-6 bg-[var(--bg)]  grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="flex flex-col absolute top-4 left-1/2 transform -translate-x-1/2">
-      <p className="text-2xl font-[bungee] text-purple-300 text-3xl font-semibold animate-pulse">WELCOME TO YOUR WELLNESS HUB 🤍</p>
+      <p className="text-2xl font-[bungee] text-purple-300 text-3xl font-semibold animate-pulse ">WELCOME TO YOUR WELLNESS HUB 🤍</p>
+      </div>
+      <div className="absolute top-4 right-4">
+      <AppHeader />
       </div>
       <div className='flex flex-col'>
       <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full w-fit h-fit inline-block mt-18">
@@ -338,7 +364,7 @@ function Dashboard() {
     </form>
   </div>
   <div className="flex flex-col space-y-4 mt-8">
-    <h2 className="text-2xl font-bold">Saved Meals</h2>
+    <h2 className="inline-block px-3 py-1 w-fit h-fit rounded-lg bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white mb-4">Saved Meals</h2>
     {savedMeals.length === 0 ? (
       <p>No saved meals found.</p>
     ) : (
@@ -374,7 +400,16 @@ function Dashboard() {
       <div className="flex justify-around items-center p-4 m-4 bg-blue-100 rounded-xl shadow-md">
        <p className="text-sm font-[tektur]">How many cups of water have you had today?</p>
         {[...Array(8)].map((_, i) => (
-          <button key={i} className={`w-6 h-6 rounded-full ${waterIntake[i] ? 'bg-blue-500' : 'bg-gray-300'}`} onClick={() => toggleWaterIntake(i)}></button>
+          <button
+          key={i}
+          style={{
+            backgroundColor: waterIntake[i] ? "var(--accent)" : "var(--card)",
+            color: waterIntake[i] ? "#fff" : "var(--text)",
+            border: waterIntake[i] ? "none" : "1px solid #D1D5DB"
+          }}
+          className="w-6 h-6 rounded-full transition"
+          onClick={() => toggleWaterIntake(i)}
+        ></button>
         ))}
       </div>
       <div className="rounded-full w-fit h-fit p-4 text-center mt-6">
@@ -392,22 +427,26 @@ function Dashboard() {
          Affirmation of The Day💗<br></br>
          "I am glowing from the inside out."
         </div>
-      <div className="text-sm italic">
+      <div className="inline-block px-3 py-1 rounded-lg bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white mb-4">
         🌔 Current Moon Phase: Waxing Gibbous
       </div>
       </div>
       <div className="flex flex-wrap justify-center gap-4 mt-8">
+      <Link href="/wellness-entry"><div className="bg-[var(--accent)] hover:bg-[var(--accent)] text-white py-2 px-4 rounded-lg">
+      Wellness Entry
+      </div></Link>
       <Link href="/progress">
-        <div className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
+        <div className="bg-[var(--accent)] hover:bg-[var(--accent)] text-white py-2 px-4 rounded-lg">
           Progress Page
         </div>
       </Link>
-      <Link href="/settings"><div className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
+      <Link href="/settings"><div className="bg-[var(--accent)] hover:bg-[var(--accent)] text-white py-2 px-4 rounded-lg">
         Settings
       </div></Link>
-      <button onClick={handleLogout} className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded-lg">
+      <button onClick={handleLogout} className="bg-[var(--accent)] hover:bg-[var(--accent)] text-white py-2 px-4 rounded-lg">
         Logout
       </button>
+
       </div>
     </main>
   );

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {supabase} from "../lib/supabaseClient"; // Adjust the import path as necessary
+import {supabase} from "../lib/supabaseClient"; 
 import {useRouter} from 'next/router';
 
 export default function RegisterForm() {
@@ -187,18 +187,6 @@ export default function RegisterForm() {
                         style={{ width: "100%", padding: "8px", marginTop: "5px" }}
                     /> Send me daily reminders!! </div>
                     <div style={{marginBottom: "15px"}}>
-                    <label htmlFor="theme">Theme:</label>
-                    <select
-                        id="theme"
-                        value={theme}
-                        onChange={(e) => setTheme(e.target.value)}
-                        required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}>
-                        <option value="">Select a theme</option>
-                        <option value="softGlow">Soft Glow</option>
-                        <option value="mysticBaddie">Mystic Baddie</option>
-                        <option value="groundedQueen">Grounded Queen</option>
-                        </select>
                     </div>
                 <button type="submit" style={{ padding: "10px 15px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "5px" }}>
                     Register </button>
