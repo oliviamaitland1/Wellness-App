@@ -1,14 +1,37 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import sanitizeInput from '../lib/lib/sanitizeInput.js';
-import Link from 'next/link';
-import router from 'next/router';
+import Router from 'next/router';
 
 type EntryRow = {
   id: string;
   user_id: string;
   entry: string;
   created_at: string;
+};
+
+type ParsedEntry = {
+  energy?: number;
+  gratitude?: string[];
+  journal?: string;
+  tags?: string[];
+  sleep_hours?: number | string | null;
+  water_cups?: number | string | null;
+  client_timestamp?: string;
+};
+
+type RowOut = {
+  id: string;
+  created_at: string;
+  energy: number | string;
+  gratitude_1: string;
+  gratitude_2: string;
+  gratitude_3: string;
+  journal: string;
+  tags: string;
+  sleep_hours: number | string;
+  water_cups: number | string;
+  client_timestamp: string;
 };
 
 function decodeEntities(s: string) {
@@ -116,13 +139,14 @@ export default function WellnessEntryForm() {
   };
 
   const handleExportCSV = () => {
-    const rows = entries.map((row) => {
-      let parsed: any = null;
+    const rows: RowOut[] = entries.map((row) => {
+      let parsed: ParsedEntry;
+
       try {
-        parsed = JSON.parse(row.entry);
+        parsed = JSON.parse(row.entry) as ParsedEntry;
       } catch {
         parsed = {
-          energy: 'N/A',
+          energy: undefined,
           gratitude: [],
           journal: row.entry || 'N/A',
           tags: [],
@@ -148,8 +172,8 @@ export default function WellnessEntryForm() {
 
     if (!rows.length) return;
 
-    const headers = Object.keys(rows[0]);
-    const esc = (val: any) => {
+    const headers = Object.keys(rows[0]) as (keyof RowOut)[];
+    const esc = (val: unknown): string => {
       const s = String(val ?? '');
       if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
       return s;
@@ -157,7 +181,7 @@ export default function WellnessEntryForm() {
 
     const csv = [
       headers.join(','),
-      ...rows.map(r => headers.map(h => esc((r as any)[h])).join(',')),
+      ...rows.map(r => headers.map(h => esc(r[h])).join(',')),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -172,7 +196,6 @@ export default function WellnessEntryForm() {
     URL.revokeObjectURL(url);
   };
 
-  // styles
   const card = 'bg-[var(--card)] dark:bg-neutral-900 rounded-2xl shadow-lg border border-[var(--border)]/40 dark:border-neutral-800 hover:shadow-[0_0_15px_var(--brand)] transition-shadow';
   const label = 'block mb-1 text-sm font-medium text-[var(--text)]/90 dark:text-neutral-200';
   const inputBase = 'w-full rounded-xl border border-[var(--border)]/50 dark:border-neutral-700 bg-[var(--bg)] dark:bg-neutral-950 text-[var(--text)] dark:text-neutral-100 px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--brand)]';
@@ -275,8 +298,7 @@ export default function WellnessEntryForm() {
         </div>
       </form>
 
-      
-     <hr className="my-6 border-[var(--border)]/50 dark:border-neutral-700" />
+      <hr className="my-6 border-[var(--border)]/50 dark:border-neutral-700" />
 
       <div className="mt-6">
         <h3 className="inline-block px-2 py-1 rounded-md bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white font-semibold text-lg mb-2">Recent Entries</h3>
@@ -308,7 +330,7 @@ export default function WellnessEntryForm() {
         {message && <p className="mt-2 text-red-500">{message}</p>}
       </div>
       <div className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
-      <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
+        <button onClick={() => Router.push('/dashboard')}>Back to Dashboard</button>
       </div>
     </div>
   );

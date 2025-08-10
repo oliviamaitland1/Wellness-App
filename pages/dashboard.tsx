@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
-import { Music, Dumbbell, BookOpen, Utensils, Smile, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
 import squatReachData from '../public/Squat Reach.json';
