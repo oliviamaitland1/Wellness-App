@@ -38,7 +38,7 @@ export default function LoginForm() {
         console.error("Supabase Error:", error.message);
         toast.error(error.message || "An unexpected error occurred.");
       } else {
-        console.log("Login successful:", data);
+        console.log("Login successful:");
         setTimeout(() => {
           router.push("/dashboard");
         });
