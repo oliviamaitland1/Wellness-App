@@ -12,8 +12,6 @@ import withAuth from '../components/ProtectedRoute';
 
 function Dashboard() {
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState("");
-  const [userName, setUserName] = useState("");
   const [mood, setMood] = useState("");
   const [waterIntake, setWaterIntake] = useState(new Array(8).fill(false));
   const [moodLoading, setMoodLoading] = useState(true);
@@ -27,28 +25,16 @@ function Dashboard() {
     const [fat, setFat] = useState ('')
     const [protein, setProtein] = useState ('')
     const [carbs, setCarbs] = useState ('')
-    const [savedMeals, setSavedMeals] = useState<any[]>([]);
+    type Meal = {
+      mealId: string;
+      mealName: string;
+      calories: number;
+      type: string;
+      date: string;
+      macros: { fat: number; protein: number; carbs: number };
+    };
+    const [savedMeals, setSavedMeals] = useState<Meal[]>([]);
 
-
-const [profileUrl, setProfileUrl] = useState<string | null>(null);
-
-useEffect(() => {
-  (async () => {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) return;
-
-    const userId = userData.user.id;
-    const { data, error } = await supabase
-      .from('user_settings')
-      .select('profile_url')
-      .eq('user_id', userId)
-      .single();
-
-    if (!error && data?.profile_url) {
-      setProfileUrl(data.profile_url);
-     }
-     })();
-     }, []);
 
 
     const handleAddMeal = async (e: React.FormEvent) => {
@@ -129,9 +115,6 @@ useEffect(() => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/login');
-      } else {
-        setUserEmail(user.email || "");
-        setUserName(user.user_metadata.full_name || "");
       }
     }
 
@@ -165,16 +148,18 @@ useEffect(() => {
   
   useEffect(() => {
     async function fetchMood() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        const { error } = await supabase
           .from('user_settings')
           .select('mood')
-          .eq('user_id', user.id)
+          .eq('user_id', userData.user.id)
           .single();
-        if (data) {
-          setMood(data.mood);
+        if (error) {
+          console.error("Fetch mood error:", error.message);
         }
+      } else if (data?.mood) {
+        setMood(data.mood);
       }
     }
     fetchMood();
@@ -249,11 +234,6 @@ useEffect(() => {
     }
   };
   
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
-
   const toggleWaterIntake = async (index) => {
     const updatedIntake = waterIntake.map((item, i) => i === index ? !item : item);
     setWaterIntake(updatedIntake);
@@ -283,7 +263,7 @@ useEffect(() => {
     <div className="bg-gradient-to-r from-orange-200 via-white to-pink-200 bg-clip-text text-transparent italic font-medium animate-pulse">
     <p className="text-sm font-[tektur] text-white">⭐Wellness Tip of The Day⭐<br></br> Take 5 minutes to breathe deeply today.</p>
       <p className="text-sm font-[tektur] text-white"> 💗Affirmation of The Day💗<br></br>
-      "I am glowing from the inside out."</p>
+      I am glowing from the inside out.</p>
     </div>
     </div>
     <div className="p-4 border rounded-lg shadow-md bg-green-100 max-w-md mt-8 p-4 rounded-xl shadow-md">
@@ -376,7 +356,7 @@ useEffect(() => {
       <div className="grid grid-cols-2 gap-2 space-y-6 mt-12 w-fit h-fit">
       {!moodLoading && (
       <div className="flex justify-around items-center bg-purple-100 p-4 rounded-full shadow-md mt-6">
-        <p className="text-sm font-[tektur]">What's your mood today, bestie?</p>
+        <p className="text-sm font-[tektur]">What is your mood today, bestie?</p>
         <button className={`text-2xl ${mood === 'happy' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('happy')} aria-label="happy">😊</button>
         <button className={`text-2xl ${mood === 'neutral' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('neutral')} aria-label="neutral">😐</button>
         <button className={`text-2xl ${mood === 'sad' ? 'ring-4 ring-pink-300 shadow-lg' : ''}`} onClick={() => handleMoodSelect('sad')} aria-label="sad">😢</button>

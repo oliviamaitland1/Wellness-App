@@ -6,6 +6,17 @@ import ProgressCharts from '../components/ProgressCharts';
 import router from 'next/router';
 import withAuth from '../components/ProtectedRoute';
 
+type NutritionLogItem = {
+  date: string;
+  type: string;
+  calories: number | string;
+  macros: {
+    protein: number | string;
+    carbs: number | string;
+    fat: number | string;
+  };
+};
+
 function Progress() {
   const [stats, setStats] = useState({
     averageWaterIntake: 0,
@@ -23,7 +34,7 @@ function Progress() {
     nutrition_log: []
   });
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -39,22 +50,41 @@ function Progress() {
           const waterIntake = userData.water_intake.filter((intake: boolean) => intake).length;
           const mostCommonMood = userData.mood || 'N/A';
           
-          const totalMeals = userData.nutrition_log.length;
-          const totalCalories = userData.nutrition_log.reduce((acc: number, meal: { calories: number }) => acc + meal.calories, 0);
-          const totalMacros = userData.nutrition_log.reduce((acc: { protein: number, fat: number, carbs: number }, meal: { macros: { protein: number, fat: number, carbs: number } }) => {
-            acc.protein += meal.macros.protein;
-            acc.fat += meal.macros.fat;
-            acc.carbs += meal.macros.carbs;
-            return acc;
-          }, { protein: 0, fat: 0, carbs: 0 });
+          const log = Array.isArray(userData?.nutrition_log) ? userData.nutrition_log : [];
 
-          const mealTypeCounts = userData.nutrition_log.reduce((acc: Record<string, number>, meal: { type: string }) => {
-            acc[meal.type] = (acc[meal.type] || 0) + 1;
-            return acc;
-          }, {});
-          const mostCommonMealType = Object.keys(mealTypeCounts).reduce((a, b) => mealTypeCounts[a] > mealTypeCounts[b] ? a : b);
+          const totalMeals = log.length;
+          
+          const totalCalories = log.reduce(
+            (acc: number, meal: { calories: number }) => acc + (meal.calories || 0),
+            0
+          );
+          
+          const totalMacros = log.reduce(
+            (acc: { protein: number; fat: number; carbs: number }, meal: { macros: { protein: number; fat: number; carbs: number } }) => {
+              acc.protein += meal.macros?.protein || 0;
+              acc.fat += meal.macros?.fat || 0;
+              acc.carbs += meal.macros?.carbs || 0;
+              return acc;
+            },
+            { protein: 0, fat: 0, carbs: 0 }
+          );
+          
+          const mealTypeCounts = log.reduce(
+            (acc: Record<string, number>, meal: { type: string }) => {
+              acc[meal.type] = (acc[meal.type] || 0) + 1;
+              return acc;
+            },
+            {}
+          );
+          
+          const mostCommonMealType =
+            Object.keys(mealTypeCounts).length > 0
+              ? Object.keys(mealTypeCounts).reduce((a, b) =>
+                  mealTypeCounts[a] > mealTypeCounts[b] ? a : b
+                )
+              : "N/A";
+          
 
-          const waterIntakeLabels = data.water_intake.map((_, i: number) => `Cup ${i + 1}`);
 
           setStats({
             averageWaterIntake: waterIntake,
@@ -70,7 +100,7 @@ function Progress() {
     };
 
     fetchStats();
-  }, []);
+  }, [data?.water_intake]);
 
   return (
     <main className="max-w-6xl mx-auto p-6 bg-[var(--bg)]">
@@ -85,32 +115,44 @@ function Progress() {
             <StatCard title="Average Fat" value={`${stats.averageFat} g`} />
             <StatCard title="Most Common Meal Type" value={stats.mostCommonMealType} />
           </div>
-  
-          <NutritionTable 
-            entries={data.nutrition_log.map((item: any) => ({
-              date: item.date,
-              mealType: item.type,
-              calories: Number(item.calories) || 0,
-              protein: Number(item.macros.protein) || 0,
-              carbs: Number(item.macros.carbs) || 0,
-              fat: Number(item.macros.fat) || 0,
-            }))}
-          />
+          <NutritionTable
+  entries={((data?.nutrition_log ?? []) as NutritionLogItem[]).map((item) => ({
+    date: item.date,
+    mealType: item.type,
+    calories: Number(item.calories) || 0,
+    protein: Number(item.macros.protein) || 0,
+    carbs: Number(item.macros.carbs) || 0,
+    fat: Number(item.macros.fat) || 0,
+  }))}
+/>
+
+      
+
+
+
         </section>
   
         <aside className="space-y-6 lg:sticky lg:top-6 self-start">
           <div className="h-64 md:h-80">
             
             <ProgressCharts
-              waterIntakeData={data.water_intake.map((intake: boolean) => (intake ? 1 : 0))}
-              mealTypeCounts={data.nutrition_log.reduce((acc: Record<string, number>, meal: { type: string }) => {
-                acc[meal.type] = (acc[meal.type] || 0) + 1;
-                return acc;
-              }, {})}
-              caloriesOverTime={data.nutrition_log.map((meal: any) => ({
-                date: meal.date,
-                calories: Number(meal.calories) || 0
-              }))}
+             waterIntakeData={(Array.isArray(data?.water_intake) ? data.water_intake : []).map(
+              (intake: boolean) => (intake ? 1 : 0)
+            )}
+              
+              mealTypeCounts={(Array.isArray(data?.nutrition_log) ? data.nutrition_log : []).reduce(
+                (acc: Record<string, number>, meal: { type: string }) => {
+                  acc[meal.type] = (acc[meal.type] || 0) + 1;
+                  return acc;
+                },
+                {}
+              )}              
+              caloriesOverTime={(Array.isArray(data?.nutrition_log) ? data.nutrition_log : []).map(
+                (meal: NutritionLogItem) => ({
+                  date: meal.date,
+                  calories: Number(meal.calories) || 0,
+                })
+              )}
             />
           </div>
         </aside>

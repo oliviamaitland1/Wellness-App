@@ -116,11 +116,18 @@ function Settings() {
       setIsError(false);
       setUploadMsg('Profile picture updated!');
       setTimeout(() => setUploadMsg(''), 3000);
-    } catch (err: any) {
-      setIsError(true);
-      setUploadMsg(`${err?.name || 'Error'}: ${err?.message || 'Upload failed.'}`);
-      event.target.value = '';
-    }
+    } catch (err: unknown) {
+        setIsError(true);
+      
+        if (err instanceof Error) {
+          setUploadMsg(`${err.name || 'Error'}: ${err.message || 'Upload failed.'}`);
+        } else {
+          setUploadMsg('Upload failed.');
+        }
+      
+        event.target.value = '';
+      }
+      
   };
 
   return (
@@ -164,7 +171,7 @@ function Settings() {
         </p>
       )}
       <div className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
-      <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
+        <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
       </div>
       
     </div>

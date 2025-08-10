@@ -9,8 +9,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function withAuth(Component: any) {
-  return function AuthenticatedComponent(props: any) {
+export default function withAuth<P extends Record<string, unknown>>(Component: React.ComponentType<P>) {
+  return function AuthenticatedComponent(props: P) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 

@@ -1,4 +1,4 @@
-"use Client";
+"use client";
 import { useState } from 'react';
 import {supabase} from '../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
@@ -39,9 +39,7 @@ export default function LoginForm() {
         toast.error(error.message || "An unexpected error occurred.");
       } else {
         console.log("Login successful:");
-        setTimeout(() => {
-          router.push("/dashboard");
-        });
+        router.push("/dashboard");
       }
     } catch (error) {
       console.log("Unexpected Error:", error);

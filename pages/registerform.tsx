@@ -14,7 +14,6 @@ export default function RegisterForm() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [reminders, setReminders] = useState("False");
     const isPasswordTooShort = password.length > 0 && password.length < 8;
-    const [theme, setTheme] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -47,7 +46,7 @@ export default function RegisterForm() {
         if (!validateForm()) return;
 
         try {
-            const {data, error} = await supabase.auth.signUp({
+            const {error} = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -58,7 +57,6 @@ export default function RegisterForm() {
                         wellnessGoal,
                         userName,
                         reminders,
-                        theme,
                     }
                 }
             });
@@ -74,9 +72,9 @@ export default function RegisterForm() {
                     router.push("/login");
                 }, 1500);
             }
-        } catch (error) {
+        } catch {
             setErrorMessage("An unexpected error occurred. Please try again later.");
-        }
+          }
     };
 
     return (
