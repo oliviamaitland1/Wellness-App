@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:css": "npx tailwindcss build styles/globals.css -o styles/output.css",
-    "postinstall": "npm link tailwindcss"
+    "build:css": "npx tailwindcss build styles/globals.css -o styles/output.css"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
