@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import withAuth from "../components/ProtectedRoute";
 import { supabase } from '../lib/supabaseClient';
+import router from 'next/router';
 
 function Settings() {
   const [theme, setTheme] = useState('light');
@@ -162,6 +163,10 @@ function Settings() {
           {uploadMsg}
         </p>
       )}
+      <div className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
+      <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
+      </div>
+      
     </div>
   );
 }

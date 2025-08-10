@@ -4,8 +4,9 @@ import StatCard from '../components/StatCard';
 import NutritionTable from '../components/NutritionTable';
 import ProgressCharts from '../components/ProgressCharts';
 import router from 'next/router';
+import withAuth from '../components/ProtectedRoute';
 
-export default function Progress() {
+function Progress() {
   const [stats, setStats] = useState({
     averageWaterIntake: 0,
     mostCommonMood: '',
@@ -75,7 +76,7 @@ export default function Progress() {
     <main className="max-w-6xl mx-auto p-6 bg-[var(--bg)]">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="space-y-6">
-          <div className="rounded border-[var(--accent)] bg-gradient-to-br from-[var(--accent)] via-[var(--accent)] to-[var(--accent)] text-black p-3 shadow-lg shadow-[var(--accent)]/50 hover:shadow-[var(--accent)]/70 hover:-translate-y-0.5 transition-all duration-300 ease-out">
+          <div className="rounded border-[var(--accent)] bg-gradient-to-br from-[var(--accent)] via-[var(--accent)] to-[var(--accent)] text-black p-3 shadow-lg shadow-[var(--accent)]/50 hover:shadow-[var(--accent)]/70 hover:-translate-y-0.5 transition-all duration-300 ease-out p-4 rounded-xl shadow-md">
             <StatCard title="Average Water Intake" value={`${stats.averageWaterIntake} cups/day`} />
             <StatCard title="Most Common Mood" value={stats.mostCommonMood} />
             <StatCard title="Average Calories" value={`${stats.averageCalories} kcal`} />
@@ -114,9 +115,10 @@ export default function Progress() {
           </div>
         </aside>
       </div>
-      <div className="bg-[var(--accent)] hover:bg-[var(--accent)] py-2 px-4 w-fit h-fit m-4">
+      <div className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
       <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
       </div>
     </main>
   );
 }
+export default withAuth(Progress);

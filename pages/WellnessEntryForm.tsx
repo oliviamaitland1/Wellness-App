@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import sanitizeInput from '../lib/lib/sanitizeInput.js';
 import Link from 'next/link';
+import router from 'next/router';
 
 type EntryRow = {
   id: string;
@@ -181,7 +182,7 @@ export default function WellnessEntryForm() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-      <h1 className="inline-block px-3 py-1 rounded-lg bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white font-extrabold text-2xl sm:text-3xl mb-4 animate-pulse">
+      <h1 className="inline-block px-3 py-1 rounded-lg bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white font-extrabold font-[bungee] text-2xl sm:text-3xl mb-4 animate-pulse">
         Wellness Entry 💌
       </h1>
 
@@ -306,9 +307,9 @@ export default function WellnessEntryForm() {
         )}
         {message && <p className="mt-2 text-red-500">{message}</p>}
       </div>
-      <Link href="/dashboard" className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
-        Back to Dashboard
-      </Link>
+      <div className="bg-[var(--accent)] hover:bg-[var(--accent)] fixed bottom-4 right-4 text-white py-2 px-4 rounded-lg">
+      <button onClick={() => router.push('/dashboard')}>Back to Dashboard</button>
+      </div>
     </div>
   );
 }

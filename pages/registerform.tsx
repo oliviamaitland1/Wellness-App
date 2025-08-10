@@ -13,6 +13,7 @@ export default function RegisterForm() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [reminders, setReminders] = useState("False");
+    const isPasswordTooShort = password.length > 0 && password.length < 8;
     const [theme, setTheme] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -69,6 +70,9 @@ export default function RegisterForm() {
                 setEmail("");
                 setPassword("");
                 setConfirmPassword("");
+                setTimeout(() => {
+                    router.push("/login");
+                }, 1500);
             }
         } catch (error) {
             setErrorMessage("An unexpected error occurred. Please try again later.");
@@ -167,6 +171,9 @@ export default function RegisterForm() {
                         required
                         style={{ width: "100%", padding: "8px", marginTop: "5px" }}
                     />
+                    {isPasswordTooShort && (
+                        <p style={{ color: "red" }}>Password must be at least 8 characters long.</p>
+                    )}
                 </div>
                 <div style={{marginBottom: "15px" }}>
                 <label htmlFor="confirmPassword">Confirm Password:</label>

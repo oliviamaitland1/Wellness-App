@@ -21,22 +21,14 @@ export default function HomePage() {
         <div className="flex items-center gap-2">
           <span className="text-2xl">🌸</span>
         </div>
-        <nav className="hidden sm:flex items-center gap-2">
-          <Link href="/login" className="px-4 py-2 rounded-xl border border-[var(--border)]/60 hover:bg-[var(--card)]/60">
-            Log in
-          </Link>
-          <Link href="/register" className="px-4 py-2 rounded-xl bg-[var(--brand)] text-white hover:brightness-110 shadow">
-            Join
-          </Link>
-        </nav>
       </header>
 
       <main className={container}>
         <section className={`${card} p-6 sm:p-10 text-center`}>
-          <h1 className={`${titleBadge} text-3xl sm:text-5xl font-extrabold tracking-tight`}>
-            Welcome to the Wellness App ✨
+          <h1 className={`${titleBadge} text-3xl sm:text-5xl font-extrabold font-[bungee] tracking-tight`}>
+          ✨Welcome to the Wellness App✨
           </h1>
-          <p className="mt-4 text-sm sm:text-base opacity-90">
+          <p className="mt-4 text-sm sm:text-base opacity-90 font-[tektur]">
           Begin your glow-up with tools to nourish your body, calm your mind, and track your progress — all in one cozy space. 💋
           </p>
 
