@@ -149,9 +149,17 @@ function Dashboard() {
   
   useEffect(() => {
     async function fetchMood() {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        const { data, error } = await supabase
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      
+      const userId = user?.id;
+      if (!userId) {
+        console.error("No user found, skipping mood fetch.");
+        return;
+      }
+      
+      const { data, error } = await supabase
         .from("user_settings")
         .select("mood")
         .eq("user_id", userId)
@@ -163,7 +171,6 @@ function Dashboard() {
         setMood(data.mood);
       }
       
-      }
     }
     fetchMood();
     setMoodLoading(false);
