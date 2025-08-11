@@ -135,7 +135,7 @@ function Dashboard() {
   
   useEffect(() => {
     async function fetchMood() {
-      const {data: {user}, error: userError} = await supabase.auth.getUser();
+      const {data: {user}} = await supabase.auth.getUser();
       
       const userId = user?.id;
       if (!userId) {
