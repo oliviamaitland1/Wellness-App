@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
 interface NutritionEntry {
   date: string;
@@ -13,29 +13,26 @@ interface NutritionTableProps {
   entries: NutritionEntry[];
 }
 
-const NutritionTable: React.FC<NutritionTableProps> = ({ entries }) => {
-    const [sortConfig, setSortConfig] = useState<{ key: keyof NutritionEntry; direction: 'ascending' | 'descending' }>({ key: 'date', direction: 'descending' });
+const NutritionTable: React.FC<NutritionTableProps> = ({entries}) => {
+    const [sortConfig, setSortConfig] = useState<{key:keyof NutritionEntry;direction:'ascending' | 'descending'}>({key:'date',direction:'descending'});
 
   const sortedEntries = [...entries];
 if (sortConfig) {
   sortedEntries.sort((a, b) => {
-    const { key, direction } = sortConfig;
+    const {key,direction} = sortConfig;
 
-    // Special-case date so we sort by actual time
     if (key === 'date') {
       const aTime = new Date(a.date).getTime();
       const bTime = new Date(b.date).getTime();
       return direction === 'ascending' ? aTime - bTime : bTime - aTime;
     }
 
-    // Numbers (calories/protein/carbs/fat) sort numerically
     if (typeof a[key] === 'number' && typeof b[key] === 'number') {
       return direction === 'ascending'
         ? (a[key] as number) - (b[key] as number)
         : (b[key] as number) - (a[key] as number);
     }
 
-    // Strings (mealType) sort alphabetically
     const A = String(a[key]).toLowerCase();
     const B = String(b[key]).toLowerCase();
     if (A < B) return direction === 'ascending' ? -1 : 1;
@@ -44,13 +41,12 @@ if (sortConfig) {
   });
 }
 
-
-  const requestSort = (key: keyof NutritionEntry) => {
+  const requestSort = (key:keyof NutritionEntry) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
     }
-    setSortConfig({ key, direction });
+    setSortConfig({key,direction});
   };
 
   return (
@@ -74,8 +70,8 @@ if (sortConfig) {
             </tr>
           </thead>
           <tbody>
-            {sortedEntries.map((entry, index) => (
-              <tr key={index} className="hover:bg-white/5 transition">
+          {sortedEntries.map((entry, index) => (
+          <tr key={`${entry.date}-${entry.mealType}-${index}`} className="hover:bg-white/5 transition">
                 <td>{entry.date}</td>
                 <td>{entry.mealType}</td>
                 <td>{entry.calories}</td>

@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { supabase } from '../lib/supabaseClient';
-import { motion } from 'framer-motion';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/router';
+import {supabase} from '../lib/supabaseClient';
+import {motion} from 'framer-motion';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
-import squatReachData from '../public/Squat Reach.json';
+import squatReachData from './src/assets/lottie/squat-reach.json';
 import {v4 as uuidv4} from 'uuid';
 import AppHeader from '../components/AppHeader';
 import withAuth from '../components/ProtectedRoute';
@@ -32,13 +32,11 @@ function Dashboard() {
       calories: number;
       type: string;
       date: string;
-      macros: { fat: number; protein: number; carbs: number };
+      macros: {fat: number; protein: number; carbs: number};
     };
     const [savedMeals, setSavedMeals] = useState<Meal[]>([]);
 
-
-
-    const handleAddMeal = async (e: React.FormEvent) => {
+   const handleAddMeal = async (e: React.FormEvent) => {
       e.preventDefault();
       const {data: {user}, error: userError} = await supabase.auth.getUser();
       if (userError || !user) {
@@ -100,8 +98,6 @@ function Dashboard() {
       setCarbs('');
     }
 
-
-
   const meditationVariants = {
     closed: { height: 0, opacity: 0, overflow: 'hidden' },
     open: { height: 'auto', opacity: 1, overflow: 'visible', transition: { duration: 0.5 } }
@@ -112,28 +108,18 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-      }
-    }
-
-    checkUser();
-  }, [router]);
-  useEffect(() => {
     async function fetchWaterIntake() {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {data: {user}, error: userError} = await supabase.auth.getUser();
       if (userError || !user) {
         console.error("User fetch error:", userError?.message);
         return;
       }
   
-      const { data, error } = await supabase
+      const {data, error} = await supabase
         .from('user_settings')
         .select('water_intake')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
   
       if (error) {
         console.error("Fetch water intake error:", error.message);
@@ -149,9 +135,7 @@ function Dashboard() {
   
   useEffect(() => {
     async function fetchMood() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const {data: {user}, error: userError} = await supabase.auth.getUser();
       
       const userId = user?.id;
       if (!userId) {
@@ -159,7 +143,7 @@ function Dashboard() {
         return;
       }
       
-      const { data, error } = await supabase
+      const {data, error} = await supabase
         .from("user_settings")
         .select("mood")
         .eq("user_id", userId)
@@ -177,18 +161,22 @@ function Dashboard() {
   }, []);
 
   const fetchSavedMeals = async () => {
-    const { data, error } = await supabase
+    const {data: {user}, error: userError} = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('User fetch error:', userError?.message);
+      return [];
+    }
+    const {data, error} = await supabase
       .from('user_settings')
       .select('nutrition_log')
-      .single();
-
+      .eq('user_id', user.id)
+      .maybeSingle();
     if (error) {
       console.error('Error fetching saved meals:', error.message);
       return [];
     }
-
-    return data?.nutrition_log || [];
-  };
+    return Array.isArray(data?.nutrition_log) ? data!.nutrition_log : [];
+    };
 
   useEffect(() => {
     fetchSavedMeals().then(meals => setSavedMeals(meals));
@@ -205,7 +193,7 @@ function Dashboard() {
 
   const handleMoodSelect = async (selectedMood: string) => {
     setMood(selectedMood);
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {data: {user}, error: userError} = await supabase.auth.getUser();
     if (userError || !user) {
       console.error("User fetch error:", userError?.message);
       return;
@@ -213,7 +201,7 @@ function Dashboard() {
   
     const userId = user.id;
   
-    const { data: existingRow, error: fetchError } = await supabase
+    const {data: existingRow, error: fetchError} = await supabase
       .from('user_settings')
       .select('user_id')
       .eq('user_id', userId)
@@ -225,18 +213,18 @@ function Dashboard() {
     }
   
     if (existingRow) {
-      const { error: updateError } = await supabase
+      const {error: updateError} = await supabase
         .from('user_settings')
-        .update({ mood: selectedMood })
+        .update({mood: selectedMood})
         .eq('user_id', userId);
   
       if (updateError) {
         console.error("Update error:", updateError.message);
       }
     } else {
-      const { error: insertError } = await supabase
+      const {error: insertError} = await supabase
         .from('user_settings')
-        .insert({ user_id: userId, mood: selectedMood });
+        .insert({user_id: userId, mood: selectedMood});
   
       if (insertError) {
         console.error("Insert error:", insertError.message);
@@ -248,11 +236,11 @@ function Dashboard() {
     const updatedIntake = waterIntake.map((item, i) => i === index ? !item : item);
     setWaterIntake(updatedIntake);
   
-    const { data: { user } } = await supabase.auth.getUser();
+    const {data: {user}} = await supabase.auth.getUser();
     if (user) {
-      const { error } = await supabase
+      const {error} = await supabase
         .from('user_settings')
-        .update({ water_intake: updatedIntake })
+        .update({water_intake: updatedIntake})
         .eq('user_id', user.id);
       if (error) {
         console.error('Error updating water intake:', error.message);
@@ -276,7 +264,7 @@ function Dashboard() {
       I am glowing from the inside out.</p>
     </div>
     </div>
-    <div className="p-4 border rounded-lg shadow-md bg-green-100 max-w-md mt-8 p-4 rounded-xl shadow-md">
+    <div className="p-4 border rounded-xl shadow-md bg-green-100 max-w-md mt-8">
     <h2 className="text-lg font-bold font-[tektur] mb-3 text-purple-700">🍽️ Nutrition Log</h2>
     <form onSubmit={handleAddMeal} className="space-y-3">
       <input
@@ -340,13 +328,13 @@ function Dashboard() {
     </form>
   </div>
   <div className="flex flex-col space-y-4 mt-8">
-    <h2 className="inline-block px-3 py-1 w-fit h-fit rounded-lg bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white mb-4 p-4 rounded-xl shadow-md font-bold font-[tektur]">Saved Meals</h2>
+  <h2 className="inline-block w-fit h-fit bg-white/80 dark:bg-white/20 text-[var(--text)] dark:text-white mb-4 p-4 rounded-xl shadow-md font-bold font-[tektur]">Saved Meals</h2>
     {savedMeals.length === 0 ? (
       <p> No saved meals found.</p>
     ) : (
       <ul className="space-y-2">
         {savedMeals.map((meal) => (
-          <li key={meal.mealId} className="bg-white p-4 rounded shadow p-4 rounded-xl shadow-md max-w-md">
+          <li key={meal.mealId} className="bg-white p-4 rounded-xl shadow-md max-w-md">
             <h3 className="font-bold font-[tektur]">{meal.mealName}</h3>
             <p>Calories: {meal.calories}</p>
             <p>Type: {meal.type}</p>
@@ -394,7 +382,7 @@ function Dashboard() {
         <Lottie
           animationData={squatReachData}
           loop={true}
-          style={{ width: '160px', height: '160px', margin: '0 auto' }}
+          style={{width: '160px', height: '160px', margin: '0 auto'}}
         />
         <p className="text-sm text-gray-600 mt-2 italic animate-pulse font-[tektur]">Try a gentle side stretch!</p>
       </div>
@@ -404,14 +392,14 @@ function Dashboard() {
         Start a Meditation
       </button>
       <motion.div
-        className=" bg-white/80 rounded-lg shadow-md p-4 mt-4 mb-6 p-4 rounded-xl shadow-md"
+        className="bg-white/80 rounded-xl shadow-md p-4 mt-4 mb-6"
         initial="closed"
         animate={meditationOpen ? "open" : "closed"}
         variants={meditationVariants}
       >
         <p className="text-center mb-4 font-[tektur]">I am safe, I am grounded, I am loved.</p>
         <audio controls className="w-full">
-          <source src="https://udhqfoqejatqmzakiliv.supabase.co/storage/v1/object/public/meditations//mixkit-serene-view-443.mp3" type="audio/mpeg" />
+          <source src="https://udhqfoqejatqmzakiliv.supabase.co/storage/v1/object/public/meditations/mixkit-serene-view-443.mp3" type="audio/mpeg" />
           Your browser does not support the audio element.
         </audio>
       </motion.div>

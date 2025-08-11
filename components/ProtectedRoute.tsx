@@ -1,13 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {supabase} from '@/lib/supabaseClient';
 
 export default function withAuth<P extends Record<string, unknown>>(Component: React.ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
@@ -16,7 +11,7 @@ export default function withAuth<P extends Record<string, unknown>>(Component: R
 
     useEffect(() => {
       const checkSession = async () => {
-        const { data } = await supabase.auth.getSession();
+        const {data} = await supabase.auth.getSession();
         if (!data?.session) {
           router.push('/login');
         } else {

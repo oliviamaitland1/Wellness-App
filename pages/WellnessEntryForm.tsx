@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import sanitizeInput from '../lib/lib/sanitizeInput.js';
+import React, {useEffect, useMemo, useState} from 'react';
+import {supabase} from '../lib/supabaseClient';
+import sanitizeInput from '../lib/lib/sanitizeInput';
 import Router from 'next/router';
 
 type EntryRow = {
@@ -74,12 +74,12 @@ export default function WellnessEntryForm() {
   });
 
   const fetchEntries = async () => {
-    const { data: userWrap, error: userErr } = await supabase.auth.getUser();
+    const {data: userWrap, error: userErr} = await supabase.auth.getUser();
     if (userErr || !userWrap?.user?.id) {
       setMessage('Could not get user.');
       return;
     }
-    const { data, error: fetchError } = await supabase
+    const {data, error: fetchError} = await supabase
       .from('wellness_entries')
       .select('*')
       .eq('user_id', userWrap.user.id)
@@ -105,7 +105,7 @@ export default function WellnessEntryForm() {
     setToast('');
 
     try {
-      const { data: userWrap, error: userErr } = await supabase.auth.getUser();
+      const {data: userWrap, error: userErr} = await supabase.auth.getUser();
       if (userErr || !userWrap?.user?.id) {
         setSaving(false);
         setMessage('Not logged in.');
@@ -113,9 +113,9 @@ export default function WellnessEntryForm() {
       }
 
       const payload = makePayload();
-      const { error: insertErr } = await supabase
+      const {error: insertErr} = await supabase
         .from('wellness_entries')
-        .insert([{ entry: JSON.stringify(payload), user_id: userWrap.user.id }]);
+        .insert([{entry: JSON.stringify(payload), user_id: userWrap.user.id}]);
 
       if (insertErr) {
         console.error(insertErr);
@@ -184,7 +184,7 @@ export default function WellnessEntryForm() {
       ...rows.map(r => headers.map(h => esc(r[h])).join(',')),
     ].join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

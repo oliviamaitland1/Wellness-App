@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
+import {supabase} from "@/lib/supabaseClient";
 
 export default function AppHeader() {
   const [profileUrl, setProfileUrl] = useState<string>("");
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: {user} } = await supabase.auth.getUser();
       if (!user) return;
       const { data } = await supabase
         .from("user_settings")
         .select("profile_url")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
       setProfileUrl(data?.profile_url ?? "");
     })();
   }, []);

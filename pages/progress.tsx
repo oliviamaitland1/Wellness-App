@@ -36,9 +36,9 @@ function Progress() {
 
   useEffect(() => { 
     const fetchStats = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {data: {user}} = await supabase.auth.getUser();
       if (user) {
-        const { data: userData, error } = await supabase
+        const {data: userData, error} = await supabase
           .from('user_settings')
           .select('mood, water_intake, nutrition_log')
           .eq('user_id', user.id)
@@ -100,7 +100,7 @@ function Progress() {
     <main className="max-w-6xl mx-auto p-6 bg-[var(--bg)]">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="space-y-6">
-          <div className="rounded border-[var(--accent)] bg-gradient-to-br from-[var(--accent)] via-[var(--accent)] to-[var(--accent)] text-black p-3 shadow-lg shadow-[var(--accent)]/50 hover:shadow-[var(--accent)]/70 hover:-translate-y-0.5 transition-all duration-300 ease-out p-4 rounded-xl shadow-md">
+          <div className="rounded-xl border-[var(--accent)] bg-gradient-to-br from-[var(--accent)] via-[var(--accent)] to-[var(--accent)] text-black p-4 shadow-lg shadow-[var(--accent)]/50 hover:shadow-[var(--accent)]/70 hover:-translate-y-0.5 transition-all duration-300 ease-out">
             <StatCard title="Average Water Intake" value={stats.averageWaterIntake ? `${Math.round(stats.averageWaterIntake)} cups/day` : '—'} />
             <StatCard title="Most Common Mood" value={stats.mostCommonMood || '—'} />
             <StatCard title="Average Calories" value={stats.averageCalories ? `${Math.round(stats.averageCalories)} kcal` : '—'} />
@@ -125,7 +125,6 @@ function Progress() {
         <aside className="space-y-6 lg:sticky lg:top-6 self-start">
           <div className="h-64 md:h-80">
             {(() => {
-              // Build the exact props first (unchanged)
               const waterData = (Array.isArray(data?.water_intake) ? data.water_intake : []).map(
                 (intake: boolean) => (intake ? 1 : 0)
               );
@@ -136,14 +135,16 @@ function Progress() {
                 },
                 {} as Record<string, number>
               );
-              const caloriesData = (Array.isArray(data?.nutrition_log) ? data.nutrition_log : []).map(
-                (meal: NutritionLogItem) => ({
-                  date: meal.date,
-                  calories: Number(meal.calories) || 0,
-                })
+              const caloriesDataMap = (Array.isArray(data?.nutrition_log) ? data.nutrition_log : []).reduce(
+                (acc: Record<string, number>, meal: NutritionLogItem) => {
+                  const d = (meal.date || '').slice(0, 10); // YYYY-MM-DD
+                  const c = Number(meal.calories) || 0;
+                  acc[d] = (acc[d] || 0) + c;               // sum per day
+                  return acc;
+                },
+                {} as Record<string, number>
               );
-
-              // Only count REAL data: water>0 or any calories>0
+              const caloriesData = Object.entries(caloriesDataMap).map(([date, calories]) => ({ date, calories }));
               const hasAnyData =
                 waterData.some(v => v > 0) ||
                 caloriesData.some(c => c.calories > 0);

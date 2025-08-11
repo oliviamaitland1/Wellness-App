@@ -1,8 +1,8 @@
 "use client";
-import { useState } from 'react';
+import {useState} from 'react';
 import {supabase} from '../lib/supabaseClient';
-import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
+import {useRouter} from 'next/router';
+import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function LoginForm() {
@@ -48,7 +48,7 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="login-form" style={{ maxWidth: "400px", margin: "0 auto" }}>
+    <form onSubmit={handleLogin} className="login-form" style={{maxWidth: "400px", margin: "0 auto"}}>
       <h1>Login</h1>
       <div>
         <label htmlFor="email">Email:</label>
@@ -70,7 +70,7 @@ export default function LoginForm() {
           required
         />
       </div>
-      {errorMsg && <p style={{ color: "red", marginTop: "4px" }}>{errorMsg}</p>}
+      {errorMsg && <p style={{color: "red", marginTop: "4px"}}>{errorMsg}</p>}
       <button type="submit">Login</button>
       <ToastContainer />
     </form>

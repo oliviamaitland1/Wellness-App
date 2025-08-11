@@ -84,7 +84,7 @@ export default function RegisterForm() {
                     <strong>{successMessage}</strong>
                 </div>
             )}
-            <form onSubmit={handleRegistration} style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px" }}>
+            <form onSubmit={handleRegistration} style={{maxWidth: "600px", margin: "0 auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px"}}>
                 {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
                 <div style={{marginBottom: "15px"}}>
                     <label htmlFor="name">Name:</label>
@@ -94,7 +94,7 @@ export default function RegisterForm() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}
                     />
                 </div>
                 <div style={{marginBottom: "15px"}}>
@@ -105,7 +105,7 @@ export default function RegisterForm() {
                         value={age}
                         onChange={(e) => setAge(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }} />  
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}} />  
                 </div>
                 <div style={{marginBottom: "15px"}}>
                     <label htmlFor="pronouns">Pronouns:</label>
@@ -114,7 +114,7 @@ export default function RegisterForm() {
                         value={pronouns}
                         onChange={(e) => setPronouns(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}>
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}>
                         <option value="">Select your pronouns</option>
                         <option value="he/him">He/Him</option>
                         <option value="she/her">She/Her</option>
@@ -130,7 +130,7 @@ export default function RegisterForm() {
                         value={wellnessGoal}
                         onChange={(e) => setWellnessGoal(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}>
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}>
                         <option value="">Select a goal</option>
                         <option value={"improvedFitness"}>Improved Fitness</option>
                         <option value="stressRelief">Stress Relief</option>
@@ -146,7 +146,7 @@ export default function RegisterForm() {
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}
                     />
                     </div>
                     <div style={{marginBottom: "15px"}}>
@@ -157,7 +157,7 @@ export default function RegisterForm() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}/>
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}/>
                 </div>
                 <div style={{marginBottom: "15px"}}>  
                 <label htmlFor="password">Password:</label>
@@ -167,10 +167,10 @@ export default function RegisterForm() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}
                     />
                     {isPasswordTooShort && (
-                        <p style={{ color: "red" }}>Password must be at least 8 characters long.</p>
+                        <p style={{color: "red"}}>Password must be at least 8 characters long.</p>
                     )}
                 </div>
                 <div style={{marginBottom: "15px" }}>
@@ -181,7 +181,7 @@ export default function RegisterForm() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}/>
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}/>
                 </div>
                 <div style={{marginBottom: "15px" }}>
                     <label htmlFor="reminders">Reminders:</label>
@@ -189,14 +189,14 @@ export default function RegisterForm() {
                         type="checkbox"
                         checked={reminders === "daily"}
                         onChange={(e) => setReminders(e.target.checked ? "daily" : "")}
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{width: "100%", padding: "8px", marginTop: "5px"}}
                     /> Send me daily reminders!! </div>
                     <div style={{marginBottom: "15px"}}>
                     </div>
-                <button type="submit" style={{ padding: "10px 15px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "5px" }}>
+                <button type="submit" style={{padding: "10px 15px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "5px"}}>
                     Register </button>
-                    {errorMessage && <p style={{ color: "red", marginTop: "4px" }}>{errorMessage}</p>}
-                    {successMessage && <p style={{ color: "green", marginTop: "4px" }}>{successMessage}</p>}
+                    {errorMessage && <p style={{color: "red", marginTop: "4px"}}>{errorMessage}</p>}
+                    {successMessage && <p style={{color: "green", marginTop: "4px"}}>{successMessage}</p>}
                     </form>
                     </main>
     );

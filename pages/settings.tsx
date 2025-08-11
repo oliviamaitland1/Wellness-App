@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import withAuth from "../components/ProtectedRoute";
-import { supabase } from '../lib/supabaseClient';
+import {supabase} from '../lib/supabaseClient';
 import router from 'next/router';
 
 function Settings() {
@@ -13,15 +13,15 @@ function Settings() {
 
   useEffect(() => {
     (async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const {data: userData, error: userError} = await supabase.auth.getUser();
       if (userError || !userData?.user) return;
       const userId = userData.user.id;
 
-      const { data, error } = await supabase
+      const {data, error} = await supabase
         .from('user_settings')
         .select('profile_url, theme')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (!error) {
         if (data?.profile_url) {
@@ -54,11 +54,11 @@ function Settings() {
     setTheme(newTheme);
     applyTheme(newTheme);
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const {data: userData, error: userError} = await supabase.auth.getUser();
     if (userError || !userData?.user) return;
     const userId = userData.user.id;
 
-    const { error: updateError } = await supabase
+    const {error: updateError} = await supabase
       .from('user_settings')
       .update({ theme: newTheme })
       .eq('user_id', userId);
@@ -82,7 +82,7 @@ function Settings() {
       return;
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const {data: userData, error: userError} = await supabase.auth.getUser();
     if (userError || !userData?.user) {
       setIsError(true);
       setUploadMsg(userError?.message || 'Not authenticated.');
@@ -95,19 +95,19 @@ function Settings() {
       const safeName = file.name.replace(/\s+/g, '_');
       const path = `${userId}/${Date.now()}-${safeName}`;
 
-      const { error: uploadError } = await supabase
+      const {error: uploadError} = await supabase
         .storage
         .from('profile-pics')
-        .upload(path, file, { upsert: true, contentType: file.type, cacheControl: '3600' });
+        .upload(path, file, {upsert: true, contentType: file.type, cacheControl: '3600'});
       if (uploadError) throw uploadError;
 
-      const { data: pub } = supabase.storage.from('profile-pics').getPublicUrl(path);
+      const {data: pub} = supabase.storage.from('profile-pics').getPublicUrl(path);
       const publicUrl = pub?.publicUrl;
       if (!publicUrl) throw new Error('Could not get public URL.');
 
-      const { error: updateError } = await supabase
+      const {error: updateError} = await supabase
         .from('user_settings')
-        .update({ profile_url: publicUrl })
+        .update({profile_url: publicUrl})
         .eq('user_id', userId);
       if (updateError) throw updateError;
 

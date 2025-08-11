@@ -13,5 +13,4 @@ export interface NutritionLogEntry {
 
 export interface UserSettings {
   nutrition_log: NutritionLogEntry[];
-  // Add other properties as needed
 }
