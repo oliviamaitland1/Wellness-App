@@ -26,7 +26,7 @@ ChartJS.register(
 );
 
 interface ProgressChartsProps {
-  waterIntakeData: number[]; // array of 0/1 entries you pass in
+  waterIntakeData: number[]; // array of 0/1 you pass in
   mealTypeCounts: Record<string, number>;
   caloriesOverTime: { date: string; calories: number }[];
 }
@@ -36,12 +36,12 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   mealTypeCounts,
   caloriesOverTime
 }) => {
-  // ---- WATER: collapse to a single "Today" bar (sum of the entries you passed) ----
+  // ---- WATER: collapse to a single "Today" bar (sum of entries) ----
   const cupsToday = (Array.isArray(waterIntakeData) ? waterIntakeData : [])
     .reduce((s, v) => s + (Number(v) || 0), 0);
   const waterIntakeLabels = cupsToday > 0 ? ['Today'] : [];
   const waterIntakeValues = cupsToday > 0 ? [cupsToday] : [];
-  // -------------------------------------------------------------------------------
+  // ---------------------------------------------------------------
 
   const mealTypeLabels = Object.keys(mealTypeCounts);
   const mealTypeValues = Object.values(mealTypeCounts);
@@ -49,12 +49,11 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   const caloriesLabels = caloriesOverTime.map(entry => entry.date);
   const caloriesValues = caloriesOverTime.map(entry => entry.calories);
 
-  // visibility flags (only real data)
   const hasWater = waterIntakeValues.length > 0;
   const hasTypes = mealTypeValues.some(n => Number(n) > 0);
   const hasCalories = caloriesValues.some(n => Number(n) > 0);
 
-  // early exit: no charts at all
+  // hide all charts when nothing real to show
   if (!(hasWater || hasTypes || hasCalories)) {
     return (
       <div className="h-full rounded-xl border border-dashed border-gray-300 grid place-items-center text-sm text-gray-500">
@@ -69,14 +68,13 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 shadow-sm mt-6">
           <Bar
             data={{
-              labels: waterIntakeLabels,          // ["Today"]
-              datasets: [
-                {
-                  label: 'Cups Today',
-                  data: waterIntakeValues,        // [cupsToday]
-                  backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                }
-              ],
+              labels: waterIntakeLabels, // ["Today"]
+              datasets: [{
+                label: 'Cups Today',
+                data: waterIntakeValues,  // [cupsToday]
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                maxBarThickness: 64,      // ✅ valid on dataset
+              }],
             }}
             options={{
               responsive: true,
@@ -96,7 +94,6 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                   suggestedMax: Math.max(1, Math.ceil(cupsToday + 1)),
                 },
               },
-              maxBarThickness: 64, // make the single bar look normal
             }}
           />
         </div>
@@ -107,17 +104,15 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           <Pie
             data={{
               labels: mealTypeLabels,
-              datasets: [
-                {
-                  data: mealTypeValues,
-                  backgroundColor: [
-                    'rgba(255, 159, 64, 0.5)',
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 206, 86, 0.5)',
-                    'rgba(75, 192, 192, 0.5)',
-                  ],
-                }
-              ],
+              datasets: [{
+                data: mealTypeValues,
+                backgroundColor: [
+                  'rgba(255, 159, 64, 0.5)',
+                  'rgba(54, 162, 235, 0.5)',
+                  'rgba(255, 206, 86, 0.5)',
+                  'rgba(75, 192, 192, 0.5)',
+                ],
+              }],
             }}
             options={{
               responsive: true,
@@ -135,14 +130,12 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           <Line
             data={{
               labels: caloriesLabels,
-              datasets: [
-                {
-                  label: 'Calories',
-                  data: caloriesValues,
-                  backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                  borderColor: 'rgba(153, 102, 255, 1)',
-                }
-              ],
+              datasets: [{
+                label: 'Calories',
+                data: caloriesValues,
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+              }],
             }}
             options={{
               responsive: true,
