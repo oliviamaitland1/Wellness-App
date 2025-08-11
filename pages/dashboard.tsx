@@ -10,6 +10,7 @@ import AppHeader from '../components/AppHeader';
 import withAuth from '../components/ProtectedRoute';
 
 
+
 function Dashboard() {
   const router = useRouter();
   const [mood, setMood] = useState("");
@@ -150,16 +151,18 @@ function Dashboard() {
     async function fetchMood() {
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user) {
-        const { error } = await supabase
-          .from('user_settings')
-          .select('mood')
-          .eq('user_id', userData.user.id)
-          .single();
-        if (error) {
-          console.error("Fetch mood error:", error.message);
-        }
+        const { data, error } = await supabase
+        .from("user_settings")
+        .select("mood")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Fetch mood error:", error.message);
       } else if (data?.mood) {
         setMood(data.mood);
+      }
+      
       }
     }
     fetchMood();
