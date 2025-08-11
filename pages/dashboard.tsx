@@ -244,7 +244,7 @@ function Dashboard() {
     }
   };
   
-  const toggleWaterIntake = async (index) => {
+  const toggleWaterIntake = async (index: number) => {
     const updatedIntake = waterIntake.map((item, i) => i === index ? !item : item);
     setWaterIntake(updatedIntake);
   
